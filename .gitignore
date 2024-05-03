@@ -1,2 +1,4 @@
 venv/
 axa/axa/__pycache__/*
+axa/contrat/migrations/__pycache__/*
+axa/contrat/__pycache__/*
