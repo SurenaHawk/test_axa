@@ -1,4 +1,6 @@
 from django.db import models
+from ckeditor.fields import RichTextField
+from multiupload.fields import MultiImageField
 
 # Create your models here.
 
@@ -10,15 +12,17 @@ class Projet(models.Model):
     affaire = models.CharField(max_length=100)
     reference = models.CharField(max_length=10)
     intermediaire = models.CharField(max_length=255)
-    short_description = models.TextField(verbose_name="Courte description")
+    short_description = models.CharField(verbose_name="Courte description",max_length=255)
     image = models.ImageField(upload_to="images/", blank=True, null=True)
     coassurance = models.BooleanField(default=False)
     operation_adresse = models.CharField(max_length=255)
-    operation_description = models.TextField()
+    operation_description = RichTextField()
     price_operation = models.DecimalField(max_digits=8, decimal_places=2)
-
 
     def __str__(self):
         return self.opportunity_number+" "+self.reference
 
+class PlanImage(models.Model):
+    projet = models.ForeignKey(Projet, on_delete=models.PROTECT)
+    image = models.ImageField(null=True, blank=True)
 
