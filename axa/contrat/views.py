@@ -8,10 +8,13 @@ from reportlab.pdfgen import canvas
 from docx import Document
 from django.conf import settings
 import os
-from django.template.loader import render_to_string
 from django.core.files.base import ContentFile
 from datetime import datetime
 from django.core.files.storage import default_storage
+from PIL import Image
+import io
+from tempfile import NamedTemporaryFile
+import tempfile
 
 
 # Create your views here.
@@ -96,33 +99,43 @@ def generate_pdf(data):
     devis_width = p.stringWidth("Devis", "Helvetica-Bold")
     p.drawString(letter[0] - left_margin - devis_width, 750, "Devis")
 
-    # p.setFont("Helvetica-Bold", 10)
-    # p.drawString(50, 620 - 40 - 20, "Numéro opportunité : {}".format(data[0]))
-    # p.drawString(50, 620 - 40 - 40, "Référence : {}".format(data[5]))
-    # p.drawString(50, 620 - 40 - 60, "Nom client : {}".format(data[1]))
-
     p.setFont("Helvetica-Bold", 10)
-    p.drawString(left_margin, top_margin - 40 - 20, "Numéro opportunité:")
-    p.drawString(left_margin, top_margin - 40 - 40, "Référence:")
-    p.drawString(left_margin, top_margin - 40 - 60, "Nom Client:")
-    p.drawString(left_margin, top_margin - 40 - 80, "Intermédiaire:")
-    p.drawString(left_margin, top_margin - 40 - 100, "Description succinte:")
-    p.drawString(left_margin, top_margin - 40 - 120, "Image correspondant à la description :")
+    p.drawString(50, 620 - 40 - 20, "Numéro opportunité : {}".format(data[0]))
+    p.drawString(50, 620 - 40 - 40, "Référence : {}".format(data[5]))
+    p.drawString(50, 620 - 40 - 60, "Nom client : {}".format(data[1]))
+    p.drawString(50, 620 - 40 - 80, "Intermédiaire : {}".format(data[6]))
+    p.drawString(50, 620 - 40 - 100, "Description succinte : {}".format(data[7]))
+
+
+    # image_content = data[8].read()
+    # print("image_content", image_content)
+    # image_pil = Image.open(image_content)
+    # print("image_pil", image_pil)
+
+    # print("data", data[8])
+    # print(type(data[8]))
+    # instance_image = Image.open(BytesIO(data[8].read()), formats=['JPEG'])
+    # print("instance", instance_image)
+    # p.drawImage(instance_image, left_margin, top_margin, width=100, height=100)
+
+    # p.setFont("Helvetica-Bold", 10)
+    # p.drawString(left_margin, top_margin - 40 - 20, "Numéro opportunité:")
+    # p.drawString(left_margin, top_margin - 40 - 40, "Référence:")
+    # p.drawString(left_margin, top_margin - 40 - 60, "Nom Client:")
+    # p.drawString(left_margin, top_margin - 40 - 80, "Intermédiaire:")
+    # p.drawString(left_margin, top_margin - 40 - 100, "Description succinte:")
+    # p.drawString(left_margin, top_margin - 40 - 120, "Image correspondant à la description :")
 
     
-    p.setFont("Helvetica", 10)
-    p.drawString(left_margin + 103, top_margin - 40 - 20, str(data[0]))
-    p.drawString(left_margin + 57, top_margin - 40 - 40, str(data[5]))
-    p.drawString(left_margin + 60, top_margin - 40 - 60, str(data[1]))
-    p.drawString(left_margin + 60, top_margin - 40 - 80, str(data[6]))
-    p.drawString(left_margin + 60, top_margin - 40 - 100, str(data[7]))
+    # p.setFont("Helvetica", 10)
+    # p.drawString(left_margin + 103, top_margin - 40 - 20, str(data[0]))
+    # p.drawString(left_margin + 57, top_margin - 40 - 40, str(data[5]))
+    # p.drawString(left_margin + 60, top_margin - 40 - 60, str(data[1]))
+    # p.drawString(left_margin + 60, top_margin - 40 - 80, str(data[6]))
+    # p.drawString(left_margin + 60, top_margin - 40 - 100, str(data[7]))
 
     # temp_image_path = default_storage.save('temp_instance_image.png', ContentFile(data[8].read()))
     # p.drawImage(temp_image_path, left_margin, top_margin - 50 - 60 - 100, width=100, height=100)
-
-
-
-
 
     p.showPage()
     p.save()
@@ -130,7 +143,7 @@ def generate_pdf(data):
     buffer.close()
     return pdf_content
 
-def generate_docx(instance):
+def generate_docx(data):
     doc = Document()
     doc.add_heading('Informations', level=1)
     doc.add_paragraph("Nom: test")
@@ -143,22 +156,20 @@ def generate_docx(instance):
     return docx_content
 
 
-# def generate_pdf():
-#     pdf = FPDF('P', 'mm', 'Letter')
-#     pdf.add_page()
-#     pdf.set_font("Arial", size=12)
-#     pdf.cell(200, 10, txt="Données récupérées :", ln=True, align="C")
-#     pdf.cell(200, 10, txt=f"Opportunity Number: test", ln=True, align="L")
-#     pdf.cell(200, 10, txt=f"Client Name: testetst", ln=True, align="L")
-#     buffer = os.path.join('pdf_files', "test.pdf")
-#     pdf.output(buffer)
-#     return buffer.getvalue()
+def download_pdf(request):
+    opportunity_number = request.GET.get('opportunity_number')
+    projets = Projet.objects.filter(opportunity_number=opportunity_number)
+    for projet in projets:
+        pdf_document = projet.pdf_file
+        response = HttpResponse(pdf_document, content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="Projet_de_contrat_'+opportunity_number+'_Date_'+datetime.now().strftime('%Y-%m-%d_%H-%M-%S')+'.pdf'
+    return response
 
-# def generate_docx():
-#     doc = Document()
-#     doc.add_heading('Données récupérées', level=1)
-#     doc.add_paragraph(f"Opportunity Number: test")
-#     doc.add_paragraph(f"Client Name: testteststest")
-#     buffer = os.path.join('docx_files', "test.docx")
-#     doc.save(buffer)
-#     return buffer.getvalue()
+def download_docx(request):
+    opportunity_number = request.GET.get('opportunity_number')
+    projets = Projet.objects.filter(opportunity_number=opportunity_number)
+    for projet in projets:
+        pdf_document = projet.docx_file
+        response = HttpResponse(pdf_document, content_type='application/docx')
+        response['Content-Disposition'] = f'attachment; filename="Projet_de_contrat_'+opportunity_number+'_Date_'+datetime.now().strftime('%Y-%m-%d_%H-%M-%S')+'.docx'
+    return response
