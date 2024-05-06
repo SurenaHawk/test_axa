@@ -20,7 +20,7 @@ class Projet(models.Model):
     price_operation = models.DecimalField(max_digits=8, decimal_places=2)
 
     def __str__(self):
-        return self.opportunity_number+" "+self.reference
+        return self.reference
 
 class PlanImage(models.Model):
     projet = models.ForeignKey(Projet, on_delete=models.PROTECT)

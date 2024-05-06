@@ -1,0 +1,24 @@
+#excel_table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+#excel_table th, #excel_table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+}
+
+#excel_table th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+    text-align: left;
+}
+
+#excel_table td {
+    background-color: #fff;
+}
+
+#excel_table th:not(:first-child),
+#excel_table td:not(:first-child) {
+    border-left: 1px solid #ddd;
+}
