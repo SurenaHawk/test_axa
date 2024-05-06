@@ -45,7 +45,7 @@ $(document).ready(function() {
         var opportunity_number = $("#opportunity_number").val();
         var reference = $("#reference").val();
         var siret_number = $("#siret_number").val();
-        var siren_number = $("siren_number").val();
+        var siren_number = $("#siren_number").val();
         var affaire = $("#affaire").val();
         var client_name = $("#client_name").val();
         var intermediaire = $("#intermediaire").val();
@@ -82,6 +82,7 @@ $(document).ready(function() {
             contentType: false,
             data: form_data,
             success: function(response) {
+
             },
         });
     });

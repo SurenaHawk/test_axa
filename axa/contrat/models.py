@@ -18,6 +18,8 @@ class Projet(models.Model):
     operation_adresse = models.CharField(max_length=255)
     operation_description = RichTextField()
     price_operation = models.DecimalField(max_digits=8, decimal_places=2)
+    pdf_file = models.FileField(upload_to='pdf_files/', null=True, blank=True)
+    docx_file = models.FileField(upload_to='docx_files/', null=True, blank=True)
 
     def __str__(self):
         return self.reference
