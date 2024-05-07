@@ -103,12 +103,12 @@ def generate_pdf(data):
     p.drawString(letter[0] - left_margin - devis_width, 750, "Devis")
 
     p.setFont("Helvetica-Bold", 10)
-    p.drawString(50, 620 - 40 - 20, "Numéro opportunité : {}".format(data[0]))
-    p.drawString(50, 620 - 40 - 40, "Référence : {}".format(data[5]))
-    p.drawString(50, 620 - 40 - 60, "Nom client : {}".format(data[1]))
+    p.drawString(50, 620 - 40 - 20, "Numéro d'opportunité : {}".format(data[0]))
+    p.drawString(50, 620 - 40 - 40, "Référence du dossier : {}".format(data[5]))
+    p.drawString(50, 620 - 40 - 60, "Nom du client : {}".format(data[1]))
     p.drawString(50, 620 - 40 - 80, "Intermédiaire : {}".format(data[6]))
     p.drawString(50, 620 - 40 - 100, "Description succinte : {}".format(data[7]))
-    p.drawString(50, 620 - 40 - 120, "Image description : ")
+    p.drawString(50, 620 - 40 - 120, "Image en lien avec la description : ")
     image_description = b''.join(chunk for chunk in data[8].chunks())
     with tempfile.NamedTemporaryFile(delete=False, suffix='.jpg') as tmp_file:
         tmp_file.write(image_description)
@@ -118,12 +118,12 @@ def generate_pdf(data):
     co_assurance = "Oui"
     if data[9] == 'false':
         co_assurance = "Non"
-    p.drawString(50, 620 - 40 - 200, "Co assurance : {}".format(co_assurance))
-    p.drawString(50, 620 - 40 - 220, "Adresse opération : {}".format(data[10]))
+    p.drawString(50, 620 - 40 - 200, "Présence d'une coassurance : {}".format(co_assurance))
+    p.drawString(50, 620 - 40 - 220, "Adresse de opération : {}".format(data[10]))
 
-    p.drawString(50, 620 - 40 - 240, "Description opération : ")
+    p.drawString(50, 620 - 40 - 240, "Description détaillée de l'opération : ")
     p.drawString(50, 620 - 40 - 260, BeautifulSoup(data[11], "html.parser").get_text(separator=' '))
-    p.drawString(50, 620 - 40 - 280, "Tarif : {}€".format(data[12]))
+    p.drawString(50, 620 - 40 - 280, "Coût de l'opération (tarif) : {}€".format(data[12]))
 
     p.showPage()
     p.save()
@@ -152,12 +152,12 @@ def generate_docx(data):
     client_name.alignment = WD_PARAGRAPH_ALIGNMENT.RIGHT
 
     opportunity = doc.add_paragraph()
-    opportunity_text = opportunity.add_run("Numéro opportunité : ")
+    opportunity_text = opportunity.add_run("Numéro d'opportunité : ")
     opportunity_text.bold = True
     opportunity.add_run(data[0])
 
     reference = doc.add_paragraph()
-    reference_text = reference.add_run("Référence : ")
+    reference_text = reference.add_run("Référence du dossier : ")
     reference_text.bold = True
     reference.add_run(data[5])
 
@@ -172,14 +172,14 @@ def generate_docx(data):
     description.add_run(data[7])
 
     image_description = doc.add_paragraph()
-    image_description_text = image_description.add_run("Image description : ")
+    image_description_text = image_description.add_run("Image en lien avec la description : ")
     image_description_text.bold = True
     image_data = b''.join(chunk for chunk in data[8].chunks())
     image_description = BytesIO(image_data)
     doc.add_picture(image_description, width=Inches(2.0))
 
     coassurance = doc.add_paragraph()
-    coassurance_text = coassurance.add_run("Co assurance : ")
+    coassurance_text = coassurance.add_run("Présence d'une coassurance : ")
     coassurance_text.bold = True
     if data[9] == "true":
         coassurance.add_run("Oui")
@@ -187,21 +187,21 @@ def generate_docx(data):
         coassurance.add_run("Non")
 
     adresse_opeation = doc.add_paragraph()
-    adresse_opeation_text = adresse_opeation.add_run("Adresse opération : ")
+    adresse_opeation_text = adresse_opeation.add_run("Adresse de opération : ")
     adresse_opeation_text.bold = True
     adresse_opeation.add_run(data[10])
 
     description_operation = doc.add_paragraph()
-    description_operation_text = description_operation.add_run("Description opération : ")
+    description_operation_text = description_operation.add_run("Description détaillée de l'opération : ")
     description_operation_text.bold = True
     description_operation = doc.add_paragraph()
     description_operation_text_clean = BeautifulSoup(data[11], "html.parser").get_text()
     description_operation.add_run(description_operation_text_clean)
 
     tarif = doc.add_paragraph()
-    tarif_text = tarif.add_run("Tarif : €")
+    tarif_text = tarif.add_run("Coût de l'opération (tarif) : ")
     tarif_text.bold = True
-    tarif.add_run(data[12])
+    tarif.add_run(data[12]+'€')
 
     docx_buffer = BytesIO()
     doc.save(docx_buffer)
