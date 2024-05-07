@@ -58,7 +58,8 @@ $(document).ready(function() {
         for (var i = 0; i < plan_operation.length; i++){
             form_data.append('plan_operation', plan_operation[i]);
         }
-        var operation_description = $("#operation_description").val();
+        var operation_description = CKEDITOR.instances['operation_description'].getData()
+        console.log(operation_description)
         var tarif = $("#excel_table tbody tr:last td:last").text().trim();
         form_data.append('opportunity_number', opportunity_number)
         form_data.append('reference', reference)

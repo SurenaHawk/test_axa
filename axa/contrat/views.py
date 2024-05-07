@@ -6,16 +6,16 @@ from io import BytesIO
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 from docx import Document
+from docx.shared import Inches
 from django.conf import settings
 import os
 from django.core.files.base import ContentFile
 from datetime import datetime
-from django.core.files.storage import default_storage
 from PIL import Image
-import io
-from tempfile import NamedTemporaryFile
+from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
+from bs4 import BeautifulSoup
+from reportlab.lib.units import inch
 import tempfile
-
 
 # Create your views here.
 
@@ -38,7 +38,7 @@ def devis(request):
         coassurance = request.POST.get("coassurance")
         operation_adresse = request.POST.get("operation_adresse")
         plan_operation = request.FILES.getlist("plan_operation")
-        operation_description = request.POST.get("operation_adresse")
+        operation_description = request.POST.get("operation_description")
         price_operation = request.POST.get('tarif')
 
         if (
@@ -82,8 +82,6 @@ def devis(request):
 
     else:
         return render(request, 'contrat/devis.html')
-        #message_danger = "Une erreur est survenue lors de la création du devis"
-        #return render(request, "contrat/devis.html", {"message_danger":message_danger})
     return render(request, 'contrat/devis.html')
 
 def generate_pdf(data):
@@ -91,7 +89,7 @@ def generate_pdf(data):
     p = canvas.Canvas(buffer, pagesize=letter)
     
     left_margin = 50
-    top_margin = 620
+    top_margin = 600
 
     p.drawImage("https://upload.wikimedia.org/wikipedia/commons/thumb/9/94/AXA_Logo.svg/1200px-AXA_Logo.svg.png", left_margin, top_margin, 100,80)
     
@@ -105,37 +103,21 @@ def generate_pdf(data):
     p.drawString(50, 620 - 40 - 60, "Nom client : {}".format(data[1]))
     p.drawString(50, 620 - 40 - 80, "Intermédiaire : {}".format(data[6]))
     p.drawString(50, 620 - 40 - 100, "Description succinte : {}".format(data[7]))
+    p.drawString(50, 620 - 40 - 120, "Image description : ")
+    image_description = b''.join(chunk for chunk in data[8].chunks())
+    with tempfile.NamedTemporaryFile(delete=False, suffix='.jpg') as tmp_file:
+        tmp_file.write(image_description)
+        tmp_file_path = tmp_file.name
+    p.drawImage(tmp_file_path, 50, 620-40-180, width=2*inch, height=1*inch)
 
-
-    # image_content = data[8].read()
-    # print("image_content", image_content)
-    # image_pil = Image.open(image_content)
-    # print("image_pil", image_pil)
-
-    # print("data", data[8])
-    # print(type(data[8]))
-    # instance_image = Image.open(BytesIO(data[8].read()), formats=['JPEG'])
-    # print("instance", instance_image)
-    # p.drawImage(instance_image, left_margin, top_margin, width=100, height=100)
-
-    # p.setFont("Helvetica-Bold", 10)
-    # p.drawString(left_margin, top_margin - 40 - 20, "Numéro opportunité:")
-    # p.drawString(left_margin, top_margin - 40 - 40, "Référence:")
-    # p.drawString(left_margin, top_margin - 40 - 60, "Nom Client:")
-    # p.drawString(left_margin, top_margin - 40 - 80, "Intermédiaire:")
-    # p.drawString(left_margin, top_margin - 40 - 100, "Description succinte:")
-    # p.drawString(left_margin, top_margin - 40 - 120, "Image correspondant à la description :")
-
-    
-    # p.setFont("Helvetica", 10)
-    # p.drawString(left_margin + 103, top_margin - 40 - 20, str(data[0]))
-    # p.drawString(left_margin + 57, top_margin - 40 - 40, str(data[5]))
-    # p.drawString(left_margin + 60, top_margin - 40 - 60, str(data[1]))
-    # p.drawString(left_margin + 60, top_margin - 40 - 80, str(data[6]))
-    # p.drawString(left_margin + 60, top_margin - 40 - 100, str(data[7]))
-
-    # temp_image_path = default_storage.save('temp_instance_image.png', ContentFile(data[8].read()))
-    # p.drawImage(temp_image_path, left_margin, top_margin - 50 - 60 - 100, width=100, height=100)
+    co_assurance = "Oui"
+    if data[9] == 'false':
+        co_assurance = "Non"
+    p.drawString(50, 620 - 40 - 200, "Co assurance : {}".format(co_assurance))
+    p.drawString(50, 620 - 40 - 220, "Adresse opération : {}".format(data[10]))
+    p.drawString(50, 620 - 40 - 240, "Description opération : ")
+    p.drawString(50, 620 - 40 - 260, BeautifulSoup(data[11], "html.parser").get_text(separator=' '))
+    p.drawString(50, 620 - 40 - 280, "Tarif : {}€".format(data[12]))
 
     p.showPage()
     p.save()
@@ -145,16 +127,81 @@ def generate_pdf(data):
 
 def generate_docx(data):
     doc = Document()
-    doc.add_heading('Informations', level=1)
-    doc.add_paragraph("Nom: test")
-    # Ajoutez d'autres informations du modèle au DOCX si nécessaire
-    temp_path = os.path.join(settings.MEDIA_ROOT, 'temp.docx')
-    doc.save(temp_path)
-    with open(temp_path, 'rb') as f:
-        docx_content = f.read()
-    os.remove(temp_path)
-    return docx_content
+    section = doc.sections[0]
+    section.left_margin = Inches(1)
+    section.top_margin = Inches(1)
+    
+    devis = doc.add_paragraph()
+    devis.alignment = WD_PARAGRAPH_ALIGNMENT.RIGHT
+    devis_text = devis.add_run("Devis")
+    devis_text.bold = True
 
+    logo_path = os.path.join(settings.BASE_DIR, 'contrat/static', 'img', 'axa_logo.png')
+    doc.add_picture(logo_path, width=Inches(1.0))  
+    
+    client_name = doc.add_paragraph()
+    client_text = client_name.add_run("Nom du Client : ")
+    client_text.bold = True
+    client_name.add_run(data[1])
+    client_name.alignment = WD_PARAGRAPH_ALIGNMENT.RIGHT
+
+    opportunity = doc.add_paragraph()
+    opportunity_text = opportunity.add_run("Numéro opportunité : ")
+    opportunity_text.bold = True
+    opportunity.add_run(data[0])
+
+    reference = doc.add_paragraph()
+    reference_text = reference.add_run("Référence : ")
+    reference_text.bold = True
+    reference.add_run(data[5])
+
+    intermediare = doc.add_paragraph()
+    intermediare_text = intermediare.add_run("Intermédiaire : ")
+    intermediare_text.bold = True
+    intermediare.add_run(data[6])
+
+    description = doc.add_paragraph()
+    description_text = description.add_run("Description succinte : ")
+    description_text.bold = True
+    description.add_run(data[7])
+
+    image_description = doc.add_paragraph()
+    image_description_text = image_description.add_run("Image description : ")
+    image_description_text.bold = True
+    image_data = b''.join(chunk for chunk in data[8].chunks())
+    image_description = BytesIO(image_data)
+    doc.add_picture(image_description, width=Inches(2.0))
+
+    coassurance = doc.add_paragraph()
+    coassurance_text = coassurance.add_run("Co assurance : ")
+    coassurance_text.bold = True
+    if data[9] == "true":
+        coassurance.add_run("Oui")
+    else:
+        coassurance.add_run("Non")
+
+    adresse_opeation = doc.add_paragraph()
+    adresse_opeation_text = adresse_opeation.add_run("Adresse opération : ")
+    adresse_opeation_text.bold = True
+    adresse_opeation.add_run(data[10])
+
+    description_operation = doc.add_paragraph()
+    description_operation_text = description_operation.add_run("Description opération : ")
+    description_operation_text.bold = True
+    description_operation = doc.add_paragraph()
+    description_operation_text_clean = BeautifulSoup(data[11], "html.parser").get_text()
+    description_operation.add_run(description_operation_text_clean)
+
+    tarif = doc.add_paragraph()
+    tarif_text = tarif.add_run("Tarif : €")
+    tarif_text.bold = True
+    tarif.add_run(data[12])
+
+    docx_buffer = BytesIO()
+    doc.save(docx_buffer)
+    docx_content = docx_buffer.getvalue()
+    docx_buffer.close()
+    return docx_content
 
 def download_pdf(request):
     opportunity_number = request.GET.get('opportunity_number')

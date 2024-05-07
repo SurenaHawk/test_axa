@@ -1,5 +1,9 @@
 $(document).ready(function() {
-    $('#projets_table').DataTable();
+    $('#projets_table').DataTable({
+        language: {
+            url: "https://cdn.datatables.net/plug-ins/1.12.0/i18n/fr-FR.json"
+        }
+    });
 
     $('table').on('click', '.download_icon', function(event) {
         event.preventDefault();
