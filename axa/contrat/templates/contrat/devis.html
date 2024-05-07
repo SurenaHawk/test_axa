@@ -1,0 +1,114 @@
+{% extends "./base.html" %}
+{% load static %}
+
+{% block stylesheet %}
+  <link rel="stylesheet" href="{% static 'css/devis.css' %}">
+{% endblock %}
+
+{% block js %}
+  <script src="{% static 'js/devis.js' %}"></script>
+  <script type="text/javascript" src="{% static "ckeditor/ckeditor-init.js" %}"></script>
+  <script type="text/javascript" src="{% static "ckeditor/ckeditor/ckeditor.js" %}"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
+  {% endblock %}
+
+{% block content %}    
+    <div class="container-fluid bg">
+      <h1 class="mt-5"> Nouveau devis </h1>
+      <div id="messages"></div>
+      <form class="row g-3" method="POST" id="form_devis" action ="">
+        {% csrf_token %}
+        <div class="row">
+          <div class="col-md-3 mt-4">
+            <div id="messages"></div>           
+            <label for="opportunity_number" class="form-label">Numéro d'opportunité</label>
+            <input type="text" placeholder="Par exemple : 875421123" class="form-control inputs_number" name="opportunity_number" id="opportunity_number" required>
+          </div>
+          <div class="col-12 mt-4">
+            <button type="submit" class="btn btn-primary" id="continue_button">Continuer</button>
+          </div>
+        </div>
+        <div class="row hidden_fields">
+          <div class="col-md-3 mt-4">
+            <label for="reference" class="form-label">Référence</label>
+              <input type="text" class="form-control" name="reference" id="reference" required>
+          </div>
+          <div class="col-md-3 mt-4">
+            <label for="siret_number" class="form-label">Numéro SIRET</label>
+            <input type="text" class="form-control inputs_number" name="siret_number" id="siret_number" required>
+          </div>
+          <div class="col-md-3 mt-4">
+            <label for="siren_number" class="form-label">Numéro SIREN</label>
+            <input type="text" class="form-control inputs_number" name="siret_number" id="siren_number" required>
+          </div>
+          <div class="col-md-3 mt-4">
+            <label for="affaire" class="form-label">Affaire</label>
+            <input type="text" class="form-control" name="affaire" id="affaire" required>
+          </div>
+          <div class="col-md-3 mt-4">
+            <label for="client_name" class="form-label">Nom du client</label>
+            <input type="text" class="form-control" name="client_name" id="client_name" required>
+          </div>
+          <div class="col-md-3 mt-4">
+            <label for="intermediaire" class="form-label">Intermédiaire</label>
+              <input type="text" class="form-control" name="intermediaire" id="intermediaire" required>
+          </div>
+          <div class="row">
+            <div class="col-md-3 mt-4">
+              <label for="short_description" class="form-label">Description succincte</label>
+                <input type="text" class="form-control" name="short_description" id="short_description" required>
+            </div>
+            <div class="col-md-3 mt-4">
+              <label for="image_description" class="form-label">Image en rapport avec la description</label>
+                <input type="file" class="form-control" name="image_description" id="image_description" required>
+            </div>
+          </div>
+          <div class="col-12 mt-4">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" name="coassurance" id="coassurance" required>
+              <label class="form-check-label" for="coassurance">
+                  Co-assurance
+              </label>
+            </div>
+          </div>
+          <div class="col-md-3 mt-4">
+            <label for="operation_adresse" class="form-label">Adresse opération</label>
+              <input type="text" name="operation_adresse" class="form-control" id="operation_adresse" required>
+          </div>
+          <div class="col-md-3 mt-4">
+            <label for="plan_operation" class="form-label">Plan de l'adresse de l'opération</label>
+              <input type="file" name="plan_operation" multiple class="form-control" id="plan_operation" required>
+          </div>
+          <div class="row">
+            <div class="col-md-6 mt-4">
+                <label for="operation_description" class="form-label">Description opération</label>
+                <textarea type="text" name="operation_description" class="form-control" id="operation_description" required></textarea>
+            </div>
+          </div>
+          <div class="col-md-6 mt-4">
+            <label class="mb-3" for="price">Tarif </label>
+            <table id="excel_table">
+                <thead>
+                    <tr>
+                        <th>Montant 1 </th>
+                        <th>Montant 2 </th>
+                        <th>Montant 3 (Montant 1 + Montant 2) en euros</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td contenteditable="true" class="input_excel"></td>
+                        <td contenteditable="true" class="input_excel"></td>
+                        <td contenteditable="false"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>    
+      </div>    
+      <div class="col-12">
+        <button type="submit" class="btn btn-primary" id="validate_devis_form" >Valider</button>
+      </div>
+    </form>
+  </div>
+
+{% endblock %}

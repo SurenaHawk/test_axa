@@ -1,0 +1,53 @@
+{% extends "./base.html" %}
+{% load static %}
+
+{% block stylesheet %}
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/2.0.6/css/dataTables.bootstrap5.css">
+
+{% endblock %}
+
+{% block js %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/2.0.6/js/dataTables.js"></script>
+    <script src="https://cdn.datatables.net/2.0.6/js/dataTables.bootstrap5.js"></script>
+    <script src="{% static 'js/home.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+
+    <div class="m-5">
+        <a href="{% url 'devis' %}" type="submit" class="btn btn-primary" >Nouveau devis</a>
+    </div>
+    
+    <div class="col m-5">
+        <h2> Liste des devis </h2>
+    </div>
+    <div class="col-md-10 m-5">
+        <table id="projets_table" class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Numéro opportunité</th>
+                    <th>Référence</th>
+                    <th>Nom du client</th>
+                    <th>Tarif</th>
+                    <th>PDF</th>
+                    <th>Docx</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for projet in projets %}
+                <tr>
+                    <td name="{{projet.opportunity_name}}">{{ projet.opportunity_number }}</td>
+                    <td>{{ projet.reference }}</td>
+                    <td>{{ projet.client_name }}</td>
+                    <td>{{ projet.price_operation }}€</td>
+                    <td><a href="{% url 'download_pdf' %}?opportunity_number={{ opportunity_number }}" class="download_icon" id="pdf_icon" data-type="pdf"><img src="{% static 'img/pdf_icon.png' %}" alt="PDF" width="20" height="20"></a></td>
+                    <td><a href="{% url 'download_docx' %}?opportunity_number={{ opportunity_number }}" class="download_icon" id="docx_icon" data-type="docx"><img src="{% static 'img/docx_icon.png' %}" alt="DOCX" width="20" height="20"></a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+{% endblock %}
