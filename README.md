@@ -26,10 +26,14 @@ Aller dans le dossier axa et executer la commande suivante pour installer les pa
 ```
 pip3 install -r requirements.txt
 ```
-
-Par la suite, il faut faire une migrations pour créer la base de données : 
+Il y a dans la base de données déjà une donnée. Vous pouvez lancer le projet directement avec la commande :
 ```
-python3 manage.py makemigrations
+python3 manage.py runserver
+```
+Si vous ne souhaitez pas utiliser la base de données initiale, supprimez le fichier db.sqlite3 et faites les commandes suivantes : 
+
+Il faut faire une migrations pour récupérer les tables pour la base de données : 
+```
 python3 manage.py migrate
 ```
 
