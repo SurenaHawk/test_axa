@@ -21,6 +21,13 @@ $(document).ready(function() {
         $(this).val(new_input_without_characters);
     });
 
+    $('#excel_table td[contenteditable="true"]').on('input', function() {
+        var value = $(this).text().trim();
+        if (!/^\d*\.?\d*$/.test(value)) {
+            $(this).text(value.replace(/[^\d.]/g, ''));
+        }
+    });
+
     calculateTotal()
 
     // Fonction pour calculer la somme et l'afficher dans la troisième colonne
@@ -82,8 +89,21 @@ $(document).ready(function() {
             processData: false,  
             contentType: false,
             data: form_data,
-            success: function(response) {
-
+            success: function(message) {
+                if (message.status == 200){
+                    $("#messages").text(message.message);
+                    $("#messages").addClass("alert-success alert");
+                    $("#form_devis")[0].reset();
+                    CKEDITOR.instances['operation_description'].setData('');
+                    $(".hidden_fields").hide();
+                    $("#validate_devis_form").hide();
+                    $("#continue_button").show();
+                    $("#excel_table tbody tr:last td:last").text('');
+                    setTimeout(function() {
+                        $("#messages").hide();
+                        $("#messages").removeClass("alert-success alert");
+                    }, 5000);
+                }
             },
         });
     });

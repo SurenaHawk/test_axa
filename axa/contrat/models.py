@@ -1,6 +1,5 @@
 from django.db import models
 from ckeditor.fields import RichTextField
-from multiupload.fields import MultiImageField
 
 # Create your models here.
 
@@ -26,5 +25,5 @@ class Projet(models.Model):
 
 class PlanImage(models.Model):
     projet = models.ForeignKey(Projet, on_delete=models.PROTECT)
-    image = models.ImageField(null=True, blank=True)
+    image_plan_operation = models.ImageField(upload_to="images_plan/", null=True, blank=True)
 

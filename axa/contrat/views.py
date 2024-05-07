@@ -1,20 +1,19 @@
-from django.shortcuts import render, redirect
-from django.http import HttpResponse
+from django.shortcuts import render
+from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from .models import Projet, PlanImage
 from io import BytesIO
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
+from reportlab.lib.units import inch
 from docx import Document
 from docx.shared import Inches
+from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from django.conf import settings
 import os
 from django.core.files.base import ContentFile
-from datetime import datetime
-from PIL import Image
-from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
+from datetime import datetime, timedelta
 from bs4 import BeautifulSoup
-from reportlab.lib.units import inch
 import tempfile
 
 # Create your views here.
@@ -67,18 +66,24 @@ def devis(request):
 
             projet.save()
 
+            for image in plan_operation:
+                projet_image = PlanImage(projet=projet, image_plan_operation=image)
+                projet_image.save()
+
             data = [
                 opportunity_number, client_name, siret_number, siren_number, affaire, reference, intermediaire, short_description, 
                 image, coassurance, operation_adresse, operation_description, price_operation
             ]
 
+            current_datetime = datetime.now() + timedelta(hours=2)
             pdf_content = generate_pdf(data)
             docx_content = generate_docx(data)
-            projet.pdf_file.save('Projet_de_contrat_'+opportunity_number+'_Date_'+datetime.now().strftime('%Y-%m-%d_%H-%M-%S')+'.pdf', ContentFile(pdf_content))
-            projet.docx_file.save('Projet_de_contrat_'+opportunity_number+'_Date_'+datetime.now().strftime('%Y-%m-%d_%H-%M-%S')+'.docx', ContentFile(docx_content))
+            projet.pdf_file.save('Projet_de_contrat_'+opportunity_number+'_Date_'+current_datetime.strftime('%Y-%m-%d_%H-%M-%S')+'.pdf', ContentFile(pdf_content))
+            projet.docx_file.save('Projet_de_contrat_'+opportunity_number+'_Date_'+current_datetime.strftime('%Y-%m-%d_%H-%M-%S')+'.docx', ContentFile(docx_content))
 
-            return HttpResponse("Fichiers générés et enregistrés avec succès.")
-
+            message = {'message': 'Le devis a bien été créé. Veuillez cliquer sur le menu "Accueil" ou sur le logo pour être redirigé vers la page d\'accueil', 
+                       'status':200}
+            return JsonResponse(message, safe=False)
 
     else:
         return render(request, 'contrat/devis.html')
@@ -115,6 +120,7 @@ def generate_pdf(data):
         co_assurance = "Non"
     p.drawString(50, 620 - 40 - 200, "Co assurance : {}".format(co_assurance))
     p.drawString(50, 620 - 40 - 220, "Adresse opération : {}".format(data[10]))
+
     p.drawString(50, 620 - 40 - 240, "Description opération : ")
     p.drawString(50, 620 - 40 - 260, BeautifulSoup(data[11], "html.parser").get_text(separator=' '))
     p.drawString(50, 620 - 40 - 280, "Tarif : {}€".format(data[12]))
@@ -206,17 +212,19 @@ def generate_docx(data):
 def download_pdf(request):
     opportunity_number = request.GET.get('opportunity_number')
     projets = Projet.objects.filter(opportunity_number=opportunity_number)
+    current_datetime = datetime.now() + timedelta(hours=2)
     for projet in projets:
         pdf_document = projet.pdf_file
         response = HttpResponse(pdf_document, content_type='application/pdf')
-        response['Content-Disposition'] = f'attachment; filename="Projet_de_contrat_'+opportunity_number+'_Date_'+datetime.now().strftime('%Y-%m-%d_%H-%M-%S')+'.pdf'
+        response['Content-Disposition'] = f'attachment; filename="Projet_de_contrat_'+opportunity_number+'_Date_'+current_datetime.strftime('%Y-%m-%d_%H-%M-%S')+'.pdf'
     return response
 
 def download_docx(request):
     opportunity_number = request.GET.get('opportunity_number')
     projets = Projet.objects.filter(opportunity_number=opportunity_number)
+    current_datetime = datetime.now() + timedelta(hours=2)
     for projet in projets:
         pdf_document = projet.docx_file
         response = HttpResponse(pdf_document, content_type='application/docx')
-        response['Content-Disposition'] = f'attachment; filename="Projet_de_contrat_'+opportunity_number+'_Date_'+datetime.now().strftime('%Y-%m-%d_%H-%M-%S')+'.docx'
+        response['Content-Disposition'] = f'attachment; filename="Projet_de_contrat_'+opportunity_number+'_Date_'+current_datetime.strftime('%Y-%m-%d_%H-%M-%S')+'.docx'
     return response

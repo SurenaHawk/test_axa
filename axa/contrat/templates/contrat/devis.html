@@ -16,24 +16,11 @@
     <div class="container-fluid bg">
       <h1 class="mt-5"> Nouveau devis </h1>
       <div id="messages"></div>
-      <form class="row g-3" method="POST" action ="">
+      <form class="row g-3" method="POST" id="form_devis" action ="">
         {% csrf_token %}
         <div class="row">
-          {% if message_danger %}
-          <center>
-              <div class="alert alert-danger" role="alert">
-                  <p> {{message_danger}} </p>
-              </div>
-          </center>
-          {% endif %}
-          {% if message_success %}
-              <center>
-                  <div class="alert alert-success" role="alert">
-                      <p> {{message_success}} </p>
-                  </div>
-              </center>
-          {% endif %}
           <div class="col-md-3 mt-4">
+            <div id="messages"></div>           
             <label for="opportunity_number" class="form-label">Numéro d'opportunité</label>
             <input type="text" placeholder="Par exemple : 875421123" class="form-control inputs_number" name="opportunity_number" id="opportunity_number" required>
           </div>
@@ -48,37 +35,37 @@
           </div>
           <div class="col-md-3 mt-4">
             <label for="siret_number" class="form-label">Numéro SIRET</label>
-            <input type="text" class="form-control inputs_number" name="siret_number" id="siret_number">
+            <input type="text" class="form-control inputs_number" name="siret_number" id="siret_number" required>
           </div>
           <div class="col-md-3 mt-4">
             <label for="siren_number" class="form-label">Numéro SIREN</label>
-            <input type="text" class="form-control inputs_number" name="siret_number" id="siren_number">
+            <input type="text" class="form-control inputs_number" name="siret_number" id="siren_number" required>
           </div>
           <div class="col-md-3 mt-4">
             <label for="affaire" class="form-label">Affaire</label>
-            <input type="text" class="form-control" name="affaire" id="affaire">
+            <input type="text" class="form-control" name="affaire" id="affaire" required>
           </div>
           <div class="col-md-3 mt-4">
             <label for="client_name" class="form-label">Nom du client</label>
-            <input type="text" class="form-control" name="client_name" id="client_name">
+            <input type="text" class="form-control" name="client_name" id="client_name" required>
           </div>
           <div class="col-md-3 mt-4">
             <label for="intermediaire" class="form-label">Intermédiaire</label>
-              <input type="text" class="form-control" name="intermediaire" id="intermediaire">
+              <input type="text" class="form-control" name="intermediaire" id="intermediaire" required>
           </div>
           <div class="row">
             <div class="col-md-3 mt-4">
               <label for="short_description" class="form-label">Description succincte</label>
-                <input type="text" class="form-control" name="short_description" id="short_description">
+                <input type="text" class="form-control" name="short_description" id="short_description" required>
             </div>
             <div class="col-md-3 mt-4">
               <label for="image_description" class="form-label">Image en rapport avec la description</label>
-                <input type="file" class="form-control" name="image_description" id="image_description">
+                <input type="file" class="form-control" name="image_description" id="image_description" required>
             </div>
           </div>
           <div class="col-12 mt-4">
             <div class="form-check">
-              <input class="form-check-input" type="checkbox" name="coassurance" id="coassurance">
+              <input class="form-check-input" type="checkbox" name="coassurance" id="coassurance" required>
               <label class="form-check-label" for="coassurance">
                   Co-assurance
               </label>
@@ -86,16 +73,16 @@
           </div>
           <div class="col-md-3 mt-4">
             <label for="operation_adresse" class="form-label">Adresse opération</label>
-              <input type="text" name="operation_adresse" class="form-control" id="operation_adresse">
+              <input type="text" name="operation_adresse" class="form-control" id="operation_adresse" required>
           </div>
           <div class="col-md-3 mt-4">
             <label for="plan_operation" class="form-label">Plan de l'adresse de l'opération</label>
-              <input type="file" name="plan_operation" multiple class="form-control" id="plan_operation">
+              <input type="file" name="plan_operation" multiple class="form-control" id="plan_operation" required>
           </div>
           <div class="row">
             <div class="col-md-6 mt-4">
                 <label for="operation_description" class="form-label">Description opération</label>
-                <textarea type="text" name="operation_description" class="form-control" id="operation_description"></textarea>
+                <textarea type="text" name="operation_description" class="form-control" id="operation_description" required></textarea>
             </div>
           </div>
           <div class="col-md-6 mt-4">
@@ -110,8 +97,8 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <td contenteditable="true"></td>
-                        <td contenteditable="true"></td>
+                        <td contenteditable="true" class="input_excel"></td>
+                        <td contenteditable="true" class="input_excel"></td>
                         <td contenteditable="false"></td>
                     </tr>
                 </tbody>
